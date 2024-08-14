@@ -1309,19 +1309,37 @@ public Map&lt;String,Object&gt; mergeConfiguration(MergeOperationType operation,
       </section>
       
       <section>
-        <title>Updating a Feature</title>
-        <para>Bundles</para>
-        <para>Configurations</para>
-        <para>refreshing packages</para>
-        <para>Action on failure</para>
-      </section>
-
-      <section>
         <title>Removing a Feature</title>
-        <para>Removing a feature is a comparatively simple operation, and therefore does 
+        <para>Removing a feature from the Feature Runtime Service uses the <xref
+         linkend="org.osgi.service.featurelauncher.runtime.FeatureRuntime.remove"
+         xrefstyle="hyperlink"/> method to uninstall and remove a feature from
+        the framework. Removing a feature is a comparatively simple operation, and therefore does 
         not require the configuration of an <xref
          linkend="org.osgi.service.featurelauncher.runtime.FeatureRuntime.OperationBuilder"
          xrefstyle="hyperlink"/>.</para>
+         
+        <para>Once the <code>remove</code> method returns the feature will have been removed
+        from the Feature Runtime, and any links to installed bundles and configurations will
+        have been removed. If this leaves any installed bundles or installed configurations
+        with no owners then these will be uninstalled or deleted from the system as appropriate.</para>
+
+        <para>If a failure occurs during the removal of a feature then the
+        Feature Runtime must make every effort to fully remove the feature, for example
+        by continuing to remove installed bundles that no longer have any owners.
+        Exceptions that occur must be logged, and upon completion the Feature Runtime must
+        throw a <code>FeatureRuntimeException</code> which indicates the incomplete removal.</para>
+        
+        <para>It is not an error to remove a feature which does not exist in the Feature Runtime
+        and this must return without error, and without altering the state of the system. It is
+        an error to attempt to remove any feature that returns <code>true</code> for <xref
+         linkend="org.osgi.service.featurelauncher.runtime.InstalledFeature.isInitialLaunch--" 
+         xrefstyle="hyperlink"/>, and any attempt to do so must result in a 
+        <code>FeatureRuntimeException</code>.</para>
+      </section>
+
+      <section>
+        <title>Updating a Feature</title>
+        <para>Bundles</para>
         <para>Configurations</para>
         <para>refreshing packages</para>
         <para>Action on failure</para>
@@ -1343,13 +1361,13 @@ public Map&lt;String,Object&gt; mergeConfiguration(MergeOperationType operation,
         
         <itemizedlist>
           <listitem>
-            <para>The the bundle installation phase, where Feature bundles are installed</para>
+            <para>The bundle installation phase, where Feature bundles are installed</para>
           </listitem>
           <listitem>
-            <para>The the configuration creation phase, where Feature Configurations are created</para>
+            <para>The configuration creation phase, where Feature Configurations are created</para>
           </listitem>
           <listitem>
-            <para>The the Feature Start phase, where Bundles are started.</para>
+            <para>The Feature Start phase, where Bundles are started.</para>
           </listitem>
         </itemizedlist>
         
@@ -1358,7 +1376,7 @@ public Map&lt;String,Object&gt; mergeConfiguration(MergeOperationType operation,
         the Feature Start phase must not begin until the bundle installation
         and configuration creation phases are complete.</para>
         
-        <section>
+        <section xml:id="service.featurelauncher-runtime.feature.bundle.install">
           <title>Bundle Installation</title>
           <para>When a feature is being installed the Feature Runtime identifies the
           bundles to be installed. The Feature Runtime also gathers the set of bundles
@@ -1426,7 +1444,7 @@ public Map&lt;String,Object&gt; mergeConfiguration(MergeOperationType operation,
           </para>
         </section>
         
-        <section>
+        <section xml:id="service.featurelauncher-runtime.feature.start">
           <title>Feature Start</title>
           <para>Once all of the bundles listed by the feature are installed then the 
           bundles' start levels are assigned as described in <xref 
@@ -1468,11 +1486,174 @@ public Map&lt;String,Object&gt; mergeConfiguration(MergeOperationType operation,
         
         <section>
           <title>Failure scenarios</title>
-          <para><remark>TODO</remark></para>
-          <para>Missing bundles</para>
-          <para>Merge failure</para>
-          <para>Missing variables</para>
-          <para>Start failures</para>
+          <para>The following is a non-exhaustive list of possible failure scenarios that
+          must be handled.</para>
+          <itemizedlist>
+            <listItem>
+              <para>The feature being installed is already known to the Feature Runtime. This must
+              be treated as a failure as the configuration of the <code>InstallOperationBuilder</code>
+              may not be the same as the previous installation. The Feature Runtime must make no changes
+              and immediately throw a <code>FeatureRuntimeException</code>.</para>
+            </listItem>
+            <listItem>
+              <para>A Feature Bundle cannot be found by any configured <xref 
+               linkend="org.osgi.service.featurelauncher.ArtifactRepository" xrefstyle="hyperlink"/>.
+              </para>
+            </listItem>
+            <listItem>
+              <para>A <code>BundleException</code> is thrown during <xref 
+               linkend="service.featurelauncher-runtime.feature.bundle.install" xrefstyle="hyperlink"/>.
+              </para>
+            </listItem>
+            <listItem>
+              <para>A <code>BundleException</code> is thrown during <xref 
+               linkend="service.featurelauncher-runtime.feature.start" xrefstyle="hyperlink"/>.
+              </para>
+            </listItem>
+            <listItem>
+              <para>A Feature Configuration cannot be created by the <xref 
+               linkend="org.osgi.service.cm.ConfigurationAdmin" xrefstyle="hyperlink"/> service.
+              </para>
+            </listItem>
+            <listItem>
+              <para>An <code>Exception</code> is thrown by any configured <xref 
+               linkend="org.osgi.service.featurelauncher.ArtifactRepository" xrefstyle="hyperlink"/>,
+               <xref linkend="org.osgi.service.featurelauncher.runtime.RuntimeBundleMerge" xrefstyle="hyperlink"/>
+              or <xref linkend="org.osgi.service.featurelauncher.runtime.RuntimeConfigurationMerge"
+               xrefstyle="hyperlink"/>.
+               </para>
+            </listItem>
+          </itemizedlist>
+          
+          <para>In all cases the first exception must be treated as a failure, with the installation process
+          halting immediately. The feature must then be removed from the runtime in a similar manner to
+          calling <code>remove</code> for the feature id. Once the feature removal is complete the failure
+          may be used in creating the <code>FeatureRuntimeException</code> that must be thrown by this method.</para>
+        </section>
+      </section>
+      <section>
+        <title>The Feature removal process</title>
+        <para>The Feature removal process has four main phases:</para>
+        
+        <itemizedlist>
+          <listitem>
+            <para>The feature removal phase, where the feature is removed from the Feature Runtime.</para>
+          </listitem>
+          <listitem>
+            <para>The bundle stop phase, where Installed Bundles without owners are stopped.</para>
+          </listitem>
+          <listitem>
+            <para>The configuration deletion phase, where Installed Configurations without owners are removed</para>
+          </listitem>
+          <listitem>
+            <para>The bundle removal phase, stopped bundles are uninstalled</para>
+          </listitem>
+        </itemizedlist>
+        
+        <para>The the feature removal and bundle stop phases may happen in any order, 
+        or even with interleaved steps. The same is true for the configuration deletion
+        phase and the bundle removal phase, however these phases must not begin until 
+        the bundle stop phase is complete.</para>
+        
+        <section xml:id="service.featurelauncher-runtime.feature.removal">
+          <title>Feature Removal</title>
+          <para>Feature removal is a simple operation which removes any reference to
+          the Installed Feature from the Feature Runtime. This includes the list of
+          installed features, and the ownership lists of any Installed Bundles or
+          Installed configurations in the Feature Runtime. After removal is complete
+          the <code>ID</code> of the removed feature should not appear anywhere in
+          the Feature Runtime.</para>
+        </section>
+        
+        <section xml:id="service.featurelauncher-runtime.bundle.stop">
+          <title>Bundle Stop</title>
+          <para>The Feature Runtime must identify the highest start level set by the
+          list of Installed Features, excluding the Feature being removed. If no start
+          level is defined by this list of features then no action is taken, otherwise
+          the framework start level is set to the newly identified start level. 
+          </para>
+          
+          <para>For each installed bundle updated in <xref 
+           linkend="service.featurelauncher-runtime.feature.removal" xrefstyle="hyperlink"/>
+          the Feature Runtime checks to see whether there are now zero owners for the installed
+          bundle. If there are then this bundle becomes eligible for removal.</para> 
+          
+          <para>Bundles that are eligible for removal are then stopped in the reverse order
+          in which they were started by <xref
+           linkend="service.featurelauncher-runtime.feature.start" xrefstyle="hyperlink"/>.
+          This is accomplished by stopping the bundles with the highest start level first,
+          using the reverse order of declaration in the feature where the start level is the
+          same. If an eligible bundle is already stopped then they may be skipped.
+          </para>
+        </section>
+        
+        <section>
+          <title>Configuration Removal</title>
+          
+          <para>Once the <xref 
+           linkend="service.featurelauncher-runtime.bundle.stop" xrefstyle="hyperlink"/>
+          phase has completed the Feature Runtime may begin removing configurations
+          that are eligible. As with bundles, configurations become eligible for removal
+          if they are no longer owned by any feature. Eligible configurations must be
+          removed in the reverse order of creation, that is the reverse order that
+          they were listed in the feature being removed.</para>
+        </section>
+        
+        <section xml:id="service.featurelauncher-runtime.bundle.removal">
+          <title>Bundle Removal</title>
+          
+          <para>Once the <xref 
+           linkend="service.featurelauncher-runtime.bundle.stop" xrefstyle="hyperlink"/>
+          phase has completed the Feature Runtime may begin uninstalling bundles from 
+          the OSGi framework. These bundles must only be eligible bundles identified
+          and stopped as part of the previous phase. Bundles are uninstalled in reverse
+          installation order, that is the reverse of the order in which they are listed
+          in the feature.</para> 
+          
+          <para>If one or more bundles have been uninstalled, and once all eligible
+          bundles have been uninstalled, the Feature Runtime must refresh the framework
+          wiring by calling <code>FrameworkWiring.refreshBundles</code>, passing the
+          list of uninstalled bundles. This will cause the framework to completely
+          remove the uninstalled bundles, and any wirings that link to them.</para>
+        </section>
+        
+        <section>
+          <title>Failure scenarios</title>
+          <para>The following is a non-exhaustive list of possible failure scenarios that
+          must be handled.</para>
+          <itemizedlist>
+            <listItem>
+              <para>The feature being removed is not known to the Feature Runtime. This must
+              not be treated as a failure, and should simply return immediately.</para>
+            </listItem>
+            <listItem>
+              <para>One or more <code>BundleExceptions</code> are thrown during <xref 
+               linkend="service.featurelauncher-runtime.bundle.stop" xrefstyle="hyperlink"/>.
+              These exceptions should be logged when they occur, but then ignored.</para>
+            </listItem>
+            <listItem>
+              <para>One or more <code>BundleExceptions</code> are thrown during <xref 
+               linkend="service.featurelauncher-runtime.bundle.removal" xrefstyle="hyperlink"/>.
+              These exceptions should be logged when they occur, with the Feature Runtime 
+              continuing despite the errors. Once the feature removal is complete the
+              failures may be used in creating the <code>FeatureRuntimeException</code>
+              that must be thrown by this method.</para>
+            </listItem>
+            <listItem>
+              <para>One or more Installed Configurations are missing from the <xref 
+               linkend="org.osgi.service.cm.ConfigurationAdmin" xrefstyle="hyperlink"/> service.
+              These missing configurations should be logged with a warning, but not treated
+              as an error.</para>
+            </listItem>
+            <listItem>
+              <para>One or more Installed Configurations cannot be deleted missing from the <xref 
+               linkend="org.osgi.service.cm.ConfigurationAdmin" xrefstyle="hyperlink"/> service.
+              These exceptions should be logged when they occur, with the Feature Runtime 
+              continuing despite the errors. Once the feature removal is complete the
+              failures may be used in creating the <code>FeatureRuntimeException</code>
+              that must be thrown by this method.</para>
+            </listItem>
+          </itemizedlist>
         </section>
       </section>
     </section>
