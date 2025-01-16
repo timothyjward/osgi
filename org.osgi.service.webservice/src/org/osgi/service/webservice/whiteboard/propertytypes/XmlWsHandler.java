@@ -38,7 +38,7 @@ import org.osgi.service.webservice.whiteboard.annotations.RequireWebserviceWhite
 })
 @RequireWebserviceWhiteboard
 @ComponentPropertyType
-public @interface WhiteboardHandler {
+public @interface XmlWsHandler {
 	
 	/**
 	 * prefix used for component properties

@@ -167,7 +167,7 @@ public class WSEcho {
     this handler is targeted to any registered <emphasis>Endpoint Implementor</emphasis>:</para>
 
       <programlisting>@Component(service = Handler.class)
-@WhiteboardHandler()
+@XmlWsHandler()
 public class SOAPLoggingHandler implements SOAPHandler&lt;SOAPMessageContext&gt; {
 
      public Set&lt;QName&gt; getHeaders() {
@@ -198,7 +198,7 @@ public class SOAPLoggingHandler implements SOAPHandler&lt;SOAPMessageContext&gt;
              <para>The previous example targeting an <emphasis>Endpoint Implementor</emphasis> registered with a <emphasis>wstype</emphasis> property of <emphasis>echo</emphasis> looks like this:</para>
 
       <programlisting>@Component(service = Handler.class)
-@WhiteboardHandler(filter="(wstype=echo)")
+@XmlWsHandler(filter="(wstype=echo)")
 public class SOAPLoggingHandler implements SOAPHandler&lt;SOAPMessageContext&gt; {
 
        ... like before ...
