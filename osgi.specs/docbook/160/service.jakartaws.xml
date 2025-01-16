@@ -213,7 +213,12 @@ public class SOAPLoggingHandler implements SOAPHandler&lt;SOAPMessageContext&gt;
                 <listitem>
                     <para>The <emphasis>Endpoint Registrar</emphasis> what is responsible to track the <emphasis>Endpoint Implementor</emphasis>S and <emphasis>Handler</emphasis>S registered 
                         in the OSGi service factory and creating <emphasis>Endpoint</emphasis>s from these.</para>
+                </listitem>
+                <listitem>
                     <para>The <emphasis>Endpoint Publisher</emphasis> that uses such <emphasis>Endpoint</emphasis> and publish them to a concrete transport</para>
+                </listitem>
+                <listitem>
+                     <para>The <emphasis>WebserviceServiceRuntime</emphasis> service that is published to the OSGi service registry to interested parties can query the current state.</para>
                 </listitem>
             </itemizedlist>
         </para>
@@ -238,6 +243,51 @@ public class SOAPLoggingHandler implements SOAPHandler&lt;SOAPMessageContext&gt;
             An implementation might use different techniques to discover a suitable way and support for different protocols but at least the publishing using the default enpoint publish must be supported, in addition to that implementations are encouraged
             to also support publishing to the Http Whiteboard Service using property <emphasis>osgi.jakarta.xml.ws.endpoint.http.contextpath</emphasis> as described in <emphasis>Registering Endpoint Implementor</emphasis>
             </para>
+        </section>
+        <section>
+        	<title>The WebserviceServiceRuntime</title>
+			 <para>The <xref
+			      linkend="org.osgi.service.webservice.runtime.WebserviceServiceRuntime" xrefstyle="hyperlink"/> service represents the runtime state information
+			      of a Jakarta XML Web Services Whiteboard instance. This information is provided through Data Transfer Objects (DTOs). The architecture of
+			      OSGi DTOs is described in <xref linkend="intro.core.release" xrefstyle="template:%t"/>.</para>
+			<para>The <code>WebserviceServiceRuntime</code> provides service registration properties to describe its underlying Jakarta XML Web
+      				Services Whiteboard. These service properties can include implementation-specific key-value pairs.
+      				They also include the following:</para>
+
+      <table pgwide="1">
+        <title>Service properties for the <code>WebserviceServiceRuntime</code> service</title>
+
+        <tgroup cols="3">
+          <colspec colnum="1" colwidth="1.9*"/>
+
+          <colspec colnum="2" colwidth="0.7*"/>
+
+          <colspec colnum="3" colwidth="4.2*"/>
+
+          <thead>
+            <row>
+              <entry>Service Property Name</entry>
+
+              <entry>Type</entry>
+
+              <entry>Description</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry><code>service.changecount</code></entry>
+              <entry><code>Long</code></entry>
+              <entry><para>Whenever the DTOs available from the WebserviceServiceRuntime service change, the value
+              of this property will increase.</para> <para>This allows
+              interested parties to be notified of changes to the DTOs by
+              observing Service Events of type <code>MODIFIED</code> for the
+              <xref linkend="org.osgi.service.webservice.runtime.WebserviceServiceRuntime"
+              xrefstyle="hyperlink"/> service. See <code>org.osgi.framework.Constants.SERVICE_CHANGECOUNT</code> in <xref linkend="intro.core.release" xrefstyle="template:%t"/>.</para></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
         </section>
         <section>
             <title>Whiteboard Error Handling</title>
