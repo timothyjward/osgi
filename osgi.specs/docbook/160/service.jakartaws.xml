@@ -208,42 +208,30 @@ public class SOAPLoggingHandler implements SOAPHandler&lt;SOAPMessageContext&gt;
     <section>
         <title>Jakarta™ XML Web Services Whiteboard Implementation</title>
         <para>
-            The Jakarta™ XML Web Services Whiteboard implementation consists of the following parts:
+            The Jakarta™ XML Web Services Whiteboard implementation is responsible for:
             <itemizedlist>
                 <listitem>
-                    <para>The <emphasis>Endpoint Registrar</emphasis> what is responsible to track the <emphasis>Endpoint Implementor</emphasis>S and <emphasis>Handler</emphasis>S registered 
-                        in the OSGi service factory and creating <emphasis>Endpoint</emphasis>s from these.</para>
+	                 <para>Track any service registered with a service property <emphasis>osgi.jakarta.xml.ws.endpoint.implementor</emphasis> 
+	                 with the value <emphasis>true</emphasis> and registers and <emphasis>Endpoint</emphasis> with a transport.
+	                 An implementation might use different techniques to discover a suitable way and support for different protocols but at least the publishing using
+	                 the default endpoint publish as described in the Jakarta XML Webservice specification must be supported. 
+	                 In addition to that implementations are encouraged to also support publishing to the Http Whiteboard Service using property <emphasis>osgi.jakarta.xml.ws.endpoint.http.contextpath</emphasis>
+	                 as described in <emphasis>Registering Endpoint Implementor</emphasis>
+	                 </para>
                 </listitem>
                 <listitem>
-                    <para>The <emphasis>Endpoint Publisher</emphasis> that uses such <emphasis>Endpoint</emphasis> and publish them to a concrete transport</para>
+                     <para>Track all registered <emphasis>jakarta.xml.ws.handler.Handler</emphasis> service with the a service property <emphasis>osgi.jakarta.xml.ws.handler.extension</emphasis> 
+                     with the value <emphasis>true</emphasis> and attach them to the target implementors <emphasis>Endpoint</emphasis>.</para>
                 </listitem>
                 <listitem>
-                     <para>The <emphasis>WebserviceServiceRuntime</emphasis> service that is published to the OSGi service registry to interested parties can query the current state.</para>
+                     <para>Publish a <emphasis>WebserviceServiceRuntime</emphasis> service to the OSGi service registry so interested parties can query the current state.</para>
                 </listitem>
             </itemizedlist>
         </para>
-         <section>
-             <title>The Endpoint Registrar</title>
-            <para>
-            The responsibility of the <emphasis>Endpoint Registrar</emphasis> is the following:
-            <itemizedlist>
-                    <listitem>
-                        <para>Track any service registered with a service property <emphasis>osgi.jakarta.xml.ws.endpoint.implementor</emphasis> with the value <emphasis>true</emphasis> and registers <emphasis>Endpoint</emphasis> services</para>
-                        <para>Track all registered <emphasis>jakarta.xml.ws.handler.Handler</emphasis> service and attach them to the target implementors <emphasis>Endpoint</emphasis></para>
-                    </listitem>
-            </itemizedlist>
+        <para>
             As <emphasis>Endpoint</emphasis> instances can only be registered once with a transport and after publishing can't change its handler chain, special care has to be taken when Endpoints are created and published.
-            Because of this an <emphasis>Endpoint Registrar</emphasis> must ensure that each Enpoint will be refreshed when the Implementor or any Handler changes.
-            </para>
-         </section>
-         <section>
-            <title>The Endpoint Publisher</title>
-            <para>
-            The responsibility of the <emphasis>Endpoint Publisher</emphasis> is to use the <emphasis>Endpoint</emphasis> and publish them with a given transport.
-            An implementation might use different techniques to discover a suitable way and support for different protocols but at least the publishing using the default enpoint publish must be supported, in addition to that implementations are encouraged
-            to also support publishing to the Http Whiteboard Service using property <emphasis>osgi.jakarta.xml.ws.endpoint.http.contextpath</emphasis> as described in <emphasis>Registering Endpoint Implementor</emphasis>
-            </para>
-        </section>
+            Because of this an <emphasis>Endpoint Registrar</emphasis> must ensure that each Enpoint will be refreshed when the Implementor or any Handler changes what possibly leads to the transport not serving request for a short amount of time.
+        </para>
         <section>
         	<title>The WebserviceServiceRuntime</title>
 			 <para>The <xref
