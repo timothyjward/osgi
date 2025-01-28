@@ -37,7 +37,7 @@ import org.osgi.service.webservice.whiteboard.WebserviceWhiteboardConstants;
 		ElementType.TYPE, ElementType.PACKAGE
 })
 @Requirement(namespace = ImplementationNamespace.IMPLEMENTATION_NAMESPACE, //
-		name = WebserviceWhiteboardConstants.WEBSERVICE, //
+		name = WebserviceWhiteboardConstants.WEBSERVICE_IMPLEMENTATION, //
 		version = WebserviceWhiteboardConstants.WEBSERVICE_SPECIFICATION_VERSION)
 public @interface RequireWebserviceWhiteboard {
 	// This is a marker annotation.

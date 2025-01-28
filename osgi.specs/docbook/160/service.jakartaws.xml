@@ -355,7 +355,55 @@ public class SOAPLoggingHandler implements SOAPHandler&lt;SOAPMessageContext&gt;
             </section>
           </section>
                 
+  <section>
+    <title>Capabilities</title>
 
+    <section>
+      <title>osgi.implementation Capability</title>
+
+      <para>The Jakarta™ XML Web Services Whiteboard Implementation bundle must provide the <link
+      linkend="service.namespaces-osgi.implementation.namespace"><code>osgi.implementation</code></link>
+      capability with the name <xref
+      linkend="org.osgi.service.webservice.whiteboard.WebserviceWhiteboardConstants.WEBSERVICE_IMPLEMENTATION"
+      xrefstyle="hyperlink"/>. This capability can be used by provisioning
+      tools and during resolution to ensure that a Typed Event implementation
+      is present. The capability must also declare a uses constraint for the
+      <code>org.osgi.service.typedevent</code> package and provide the version
+      of this specification:</para>
+
+      <programlisting>Provide-Capability: osgi.implementation;
+ osgi.implementation=osgi.webservice";
+ uses:="org.osgi.service.webservice.runtime,org.osgi.service.webservice.runtime.dto";
+ version:Version="<xref endterm="org.osgi.service.webservice-version.number"
+          linkend="org.osgi.service.webservice"/>"</programlisting>
+
+      <para>The <xref
+      linkend="org.osgi.service.webservice.whiteboard.annotations.RequireWebserviceWhiteboard"
+      xrefstyle="hyperlink"/> annotation can be used to require this
+      capability.</para>
+
+      <para>This capability must follow the rules defined for the <xref
+      linkend="service.namespaces-osgi.implementation.namespace"/>.</para>
+    </section>
+
+    <section>
+      <title>osgi.service Capability</title>
+
+      <para>The bundle providing the Jakarta™ XML Web Services Whiteboard service must provide
+      capabilities in the <link
+      linkend="service.namespaces-osgi.service.namespace"><code>osgi.service</code></link>
+      namespace representing the services it is required to register. This
+      capability must also declare uses constraints for the relevant service
+      packages:</para>
+
+      <programlisting>Provide-Capability: osgi.service;
+ objectClass:List&lt;String&gt;="org.osgi.service.webservice.runtime.WebserviceServiceRuntime";
+ uses:="org.osgi.service.webservice.runtime,org.osgi.service.webservice.runtime.dto"</programlisting>
+
+      <para>This capability must follow the rules defined for the <xref
+      linkend="service.namespaces-osgi.service.namespace"/>.</para>
+    </section>
+  </section>
   
   <xi:include href="../../generated/javadoc/docbook/org.osgi.service.webservice.runtime.xml"/>
   <xi:include href="../../generated/javadoc/docbook/org.osgi.service.webservice.runtime.dto.xml"/>

@@ -31,7 +31,7 @@ public class WebserviceWhiteboardConstants {
 	/**
 	 * Base namespace for the Webservice Whiteboard specification
 	 */
-	public static final String	WEBSERVICE							= "osgi.jakarta.xml.ws";
+	public static final String	WEBSERVICE							= "osgi.service.webservice";
 	/**
 	 * Base prefix used in component property types
 	 */
@@ -83,5 +83,10 @@ public class WebserviceWhiteboardConstants {
 	 * Specification version
 	 */
 	public static final String	WEBSERVICE_SPECIFICATION_VERSION	= "1.0";
+
+	/**
+	 * Specification namesüace
+	 */
+	public static final String	WEBSERVICE_IMPLEMENTATION			= "osgi.webservice";
 
 }
